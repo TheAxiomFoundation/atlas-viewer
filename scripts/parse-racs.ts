@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Parse RAC files from cosilico-us and generate JSON for the viewer
+ * Parse RAC files from rac-us and generate JSON for the viewer
  */
 
 import { readdir, readFile, writeFile } from 'fs/promises'
@@ -14,8 +14,8 @@ interface ParsedRAC {
   path: string
 }
 
-const COSILICO_US = '/Users/maxghenis/CosilicoAI/cosilico-us/statute'
-const COSILICO_CA = '/Users/maxghenis/CosilicoAI/cosilico-ca/statute'
+const RAC_US = '/Users/maxghenis/RulesFoundation/rac-us/statute'
+const RAC_CA = '/Users/maxghenis/RulesFoundation/rac-ca/statute'
 
 async function findRacFiles(dir: string): Promise<string[]> {
   const files: string[] = []
@@ -27,7 +27,7 @@ async function findRacFiles(dir: string): Promise<string[]> {
         const fullPath = join(currentDir, entry.name)
         if (entry.isDirectory()) {
           await walk(fullPath)
-        } else if (entry.name.endsWith('.rac') || entry.name.endsWith('.cosilico')) {
+        } else if (entry.name.endsWith('.rac')) {
           files.push(fullPath)
         }
       }
@@ -64,7 +64,7 @@ function parseRAC(content: string, filePath: string): ParsedRAC | null {
   if (!citation && statuteIdx > 0) {
     const parts = pathParts.slice(statuteIdx + 1)
     const title = parts[0]
-    const section = parts.slice(1).join('/').replace(/\.(rac|cosilico)$/, '')
+    const section = parts.slice(1).join('/').replace(/\.rac$/, '')
     citation = `${title} USC ${section}`
   }
 
@@ -73,15 +73,15 @@ function parseRAC(content: string, filePath: string): ParsedRAC | null {
     title: titleMatch?.[1]?.trim() || citation,
     text: textMatch?.[1]?.trim() || '',
     code: code.trim(),
-    path: relative('/Users/maxghenis/CosilicoAI', filePath),
+    path: relative('/Users/maxghenis/RulesFoundation', filePath),
   }
 }
 
 async function main() {
   console.log('Scanning for RAC files...')
 
-  const usFiles = await findRacFiles(COSILICO_US)
-  const caFiles = await findRacFiles(COSILICO_CA)
+  const usFiles = await findRacFiles(RAC_US)
+  const caFiles = await findRacFiles(RAC_CA)
 
   console.log(`Found ${usFiles.length} US RAC files`)
   console.log(`Found ${caFiles.length} CA RAC files`)

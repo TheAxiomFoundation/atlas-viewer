@@ -3,7 +3,7 @@
 
 This script creates a JSON index combining:
 1. All documents in ~/.arch/ (Canada, UK, federal, state PDFs)
-2. All RAC encodings in cosilico-us/statute/
+2. All RAC encodings in rac-us/statute/
 
 The output can be used by the archview webapp.
 """
@@ -154,10 +154,10 @@ def scan_arch_directory(arch_root: Path) -> list[dict]:
     return documents
 
 
-def scan_rac_files(cosilico_us_root: Path) -> list[dict]:
-    """Scan cosilico-us/statute for RAC encodings."""
+def scan_rac_files(rac_us_root: Path) -> list[dict]:
+    """Scan rac-us/statute for RAC encodings."""
     documents = []
-    statute_dir = cosilico_us_root / "statute"
+    statute_dir = rac_us_root / "statute"
 
     if not statute_dir.exists():
         return documents
@@ -221,9 +221,9 @@ def main():
         help="Path to arch root directory",
     )
     parser.add_argument(
-        "--cosilico-us",
-        default=str(Path.home() / "CosilicoAI" / "cosilico-us"),
-        help="Path to cosilico-us repository",
+        "--rac-us",
+        default=str(Path.home() / "RulesFoundation" / "rac-us"),
+        help="Path to rac-us repository",
     )
     parser.add_argument(
         "--output",
@@ -238,14 +238,14 @@ def main():
     args = parser.parse_args()
 
     arch_root = Path(args.arch_root).expanduser()
-    cosilico_us = Path(args.cosilico_us).expanduser()
+    rac_us = Path(args.rac_us).expanduser()
 
     print(f"Scanning arch directory: {arch_root}")
     arch_docs = scan_arch_directory(arch_root)
     print(f"  Found {len(arch_docs)} arch documents")
 
-    print(f"Scanning RAC files: {cosilico_us}")
-    rac_docs = scan_rac_files(cosilico_us)
+    print(f"Scanning RAC files: {rac_us}")
+    rac_docs = scan_rac_files(rac_us)
     print(f"  Found {len(rac_docs)} RAC encodings")
 
     # Combine and deduplicate
