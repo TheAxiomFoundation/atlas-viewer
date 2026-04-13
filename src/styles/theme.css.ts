@@ -13,7 +13,7 @@ export const vars = createGlobalTheme(':root', {
     amber: '#ffaa00',
     text: '#e8e8e8',
     textDim: '#888899',
-    textMuted: '#555566',
+    textMuted: '#888899',
     border: '#1a1a22',
     borderHover: '#2a2a35',
   },
