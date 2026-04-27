@@ -38,7 +38,7 @@ Built with:
 ## Related Repos
 
 - [atlas](https://github.com/TheAxiomFoundation/atlas) — Source document archive
-- [rulespec](https://github.com/TheAxiomFoundation/rulespec) — Rules as Code DSL
+- [rulespec-compile](https://github.com/TheAxiomFoundation/rulespec-compile) — RuleSpec compiler and DSL tooling
 - [autorulespec](https://github.com/TheAxiomFoundation/autorulespec) — AI-powered statute encoding
 
 ## License
