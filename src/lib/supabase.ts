@@ -32,8 +32,8 @@ export interface Rule {
   repeal_date: string | null
   source_url: string | null
   source_path: string | null
-  rac_path: string | null
-  has_rac: boolean
+  rulespec_path: string | null
+  has_rulespec: boolean
   created_at: string
   updated_at: string
 }

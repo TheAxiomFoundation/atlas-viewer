@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate unified index of all arch documents and RAC encodings.
+"""Generate unified index of all arch documents and RuleSpec encodings.
 
 This script creates a JSON index combining:
 1. All documents in ~/.arch/ (Canada, UK, federal, state PDFs)
-2. All RAC encodings in rac-us/statute/
+2. All RuleSpec encodings in rules-us/statute/
 
 The output can be used by the archview webapp.
 """
@@ -77,8 +77,8 @@ def scan_arch_directory(arch_root: Path) -> list[dict]:
                 "format": "xml",
                 "title": title or f"Canada Act {code}",
                 "archPath": str(xml_file),
-                "hasRac": False,
-                "racPath": None,
+                "hasRuleSpec": False,
+                "rulespecPath": None,
                 "citation": f"RSC {code}",
                 "text": None,
                 "code": None,
@@ -101,8 +101,8 @@ def scan_arch_directory(arch_root: Path) -> list[dict]:
                         "format": "xml",
                         "title": title or f"UK Act {year} c.{chapter}",
                         "archPath": str(xml_file),
-                        "hasRac": False,
-                        "racPath": None,
+                        "hasRuleSpec": False,
+                        "rulespecPath": None,
                         "citation": f"c.{chapter} ({year})",
                         "text": None,
                         "code": None,
@@ -123,8 +123,8 @@ def scan_arch_directory(arch_root: Path) -> list[dict]:
                         "format": "pdf",
                         "title": pdf_file.stem.replace("_", " ").replace("-", " ").title(),
                         "archPath": str(pdf_file),
-                        "hasRac": False,
-                        "racPath": None,
+                        "hasRuleSpec": False,
+                        "rulespecPath": None,
                         "citation": None,
                         "text": None,
                         "code": None,
@@ -144,8 +144,8 @@ def scan_arch_directory(arch_root: Path) -> list[dict]:
                         "format": "pdf",
                         "title": pdf_file.stem.replace("_", " ").replace("-", " ").title(),
                         "archPath": str(pdf_file),
-                        "hasRac": False,
-                        "racPath": None,
+                        "hasRuleSpec": False,
+                        "rulespecPath": None,
                         "citation": None,
                         "text": None,
                         "code": None,
@@ -154,16 +154,16 @@ def scan_arch_directory(arch_root: Path) -> list[dict]:
     return documents
 
 
-def scan_rac_files(rac_us_root: Path) -> list[dict]:
-    """Scan rac-us/statute for RAC encodings."""
+def scan_rulespec_files(rules_us_root: Path) -> list[dict]:
+    """Scan rules-us/statute for RuleSpec encodings."""
     documents = []
-    statute_dir = rac_us_root / "statute"
+    statute_dir = rules_us_root / "statute"
 
     if not statute_dir.exists():
         return documents
 
-    for rac_file in statute_dir.rglob("*.rac"):
-        rel_path = rac_file.relative_to(statute_dir)
+    for rulespec_file in statute_dir.rglob("*.yaml"):
+        rel_path = rulespec_file.relative_to(statute_dir)
         path_parts = rel_path.with_suffix("").parts
 
         # Build citation from path (e.g., 26/32/a -> "26 USC § 32(a)")
@@ -179,9 +179,9 @@ def scan_rac_files(rac_us_root: Path) -> list[dict]:
         else:
             citation = str(rel_path)
 
-        # Read RAC file content
+        # Read RuleSpec file content
         try:
-            content = rac_file.read_text()
+            content = rulespec_file.read_text()
 
             # Extract title from variable label or description
             title_match = re.search(r'label:\s*["\']([^"\']+)["\']', content)
@@ -196,17 +196,17 @@ def scan_rac_files(rac_us_root: Path) -> list[dict]:
                 "jurisdiction": "us",
                 "source": "usc",
                 "type": "statute",
-                "format": "rac",
+                "format": "rulespec",
                 "title": doc_title,
                 "archPath": None,
-                "hasRac": True,
-                "racPath": str(rac_file),
+                "hasRuleSpec": True,
+                "rulespecPath": str(rulespec_file),
                 "citation": citation,
                 "text": text,
                 "code": content,
             })
         except Exception as e:
-            print(f"Error reading {rac_file}: {e}")
+            print(f"Error reading {rulespec_file}: {e}")
 
     return documents
 
@@ -221,9 +221,9 @@ def main():
         help="Path to arch root directory",
     )
     parser.add_argument(
-        "--rac-us",
-        default=str(Path.home() / "RulesFoundation" / "rac-us"),
-        help="Path to rac-us repository",
+        "--rules-us",
+        default=str(Path.home() / "TheAxiomFoundation" / "rules-us"),
+        help="Path to rules-us repository",
     )
     parser.add_argument(
         "--output",
@@ -238,18 +238,18 @@ def main():
     args = parser.parse_args()
 
     arch_root = Path(args.arch_root).expanduser()
-    rac_us = Path(args.rac_us).expanduser()
+    rules_us = Path(args.rules_us).expanduser()
 
     print(f"Scanning arch directory: {arch_root}")
     arch_docs = scan_arch_directory(arch_root)
     print(f"  Found {len(arch_docs)} arch documents")
 
-    print(f"Scanning RAC files: {rac_us}")
-    rac_docs = scan_rac_files(rac_us)
-    print(f"  Found {len(rac_docs)} RAC encodings")
+    print(f"Scanning RuleSpec files: {rules_us}")
+    rulespec_docs = scan_rulespec_files(rules_us)
+    print(f"  Found {len(rulespec_docs)} RuleSpec encodings")
 
     # Combine and deduplicate
-    all_docs = arch_docs + rac_docs
+    all_docs = arch_docs + rulespec_docs
 
     # Sort by jurisdiction, then by id
     all_docs.sort(key=lambda d: (d["jurisdiction"], d["id"]))
@@ -257,7 +257,7 @@ def main():
     # Optionally strip content to reduce file size
     if not args.include_content:
         for doc in all_docs:
-            if doc["format"] != "rac":
+            if doc["format"] != "rulespec":
                 doc["text"] = None
                 doc["code"] = None
 
@@ -270,7 +270,7 @@ def main():
             "uk": len([d for d in all_docs if d["jurisdiction"] == "uk"]),
             "us_federal": len([d for d in all_docs if d["jurisdiction"] == "us" and d["source"] != "policyengine-us"]),
             "us_state": len([d for d in all_docs if d["jurisdiction"].startswith("us-")]),
-            "rac_encoded": len([d for d in all_docs if d["hasRac"]]),
+            "rulespec_encoded": len([d for d in all_docs if d["hasRuleSpec"]]),
         },
         "documents": all_docs,
     }

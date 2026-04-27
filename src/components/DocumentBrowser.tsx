@@ -10,8 +10,8 @@ interface ArchDocument {
   format: string
   title: string
   archPath: string | null
-  hasRac: boolean
-  racPath: string | null
+  hasRuleSpec: boolean
+  rulespecPath: string | null
   citation: string | null
   text: string | null
   code: string | null
@@ -42,16 +42,16 @@ function groupDocuments(documents: ArchDocument[]) {
       groupKey = 'uk'
       groupLabel = 'UK Public General Acts'
       icon = '🇬🇧'
-    } else if (doc.jurisdiction === 'us' && doc.hasRac) {
-      // Group RAC-encoded US statutes by title
+    } else if (doc.jurisdiction === 'us' && doc.hasRuleSpec) {
+      // Group RuleSpec-encoded US statutes by title
       const titleMatch = doc.id.match(/us\/(\d+)\//)
       if (titleMatch) {
-        groupKey = `us-rac-${titleMatch[1]}`
+        groupKey = `us-rulespec-${titleMatch[1]}`
         groupLabel = getTitleLabel(titleMatch[1])
         icon = '⚙️'
       } else {
-        groupKey = 'us-rac-other'
-        groupLabel = 'US Code - RAC Encoded'
+        groupKey = 'us-rulespec-other'
+        groupLabel = 'US Code - RuleSpec Encoded'
         icon = '⚙️'
       }
     } else if (doc.jurisdiction === 'us' && doc.type === 'guidance') {
@@ -85,7 +85,7 @@ function getTitleLabel(title: string): string {
     '26': 'Title 26 - Internal Revenue Code',
     '42': 'Title 42 - Public Health & Welfare',
   }
-  return `${titles[title] || `Title ${title}`} - RAC`
+  return `${titles[title] || `Title ${title}`} - RuleSpec`
 }
 
 function getFederalSourceLabel(source: string): string {
@@ -99,8 +99,8 @@ function getFederalSourceLabel(source: string): string {
   return sources[source] || `Federal - ${source.toUpperCase()}`
 }
 
-function getFormatBadge(format: string, hasRac: boolean): { text: string; color: string } {
-  if (hasRac) return { text: 'RAC', color: '#00ff88' }
+function getFormatBadge(format: string, hasRuleSpec: boolean): { text: string; color: string } {
+  if (hasRuleSpec) return { text: 'RuleSpec', color: '#00ff88' }
   if (format === 'xml') return { text: 'XML', color: '#00d4ff' }
   if (format === 'pdf') return { text: 'PDF', color: '#ffaa00' }
   return { text: format.toUpperCase(), color: '#888' }
@@ -108,7 +108,7 @@ function getFormatBadge(format: string, hasRac: boolean): { text: string; color:
 
 export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: DocumentBrowserProps) {
   const [search, setSearch] = useState('')
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['us-rac-26', 'us-rac-7']))
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['us-rulespec-26', 'us-rulespec-7']))
   const [jurisdictionFilter, setJurisdictionFilter] = useState<string | null>(null)
 
   const groups = useMemo(() => groupDocuments(documents), [documents])
@@ -120,7 +120,7 @@ export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: D
     if (jurisdictionFilter) {
       filtered = Object.fromEntries(
         Object.entries(filtered).filter(([key]) => {
-          if (jurisdictionFilter === 'rac') return key.includes('-rac-')
+          if (jurisdictionFilter === 'rulespec') return key.includes('-rulespec-')
           if (jurisdictionFilter === 'us') return key.startsWith('us-')
           return key.startsWith(jurisdictionFilter)
         })
@@ -185,10 +185,10 @@ export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: D
           All ({documents.length.toLocaleString()})
         </button>
         <button
-          className={`${styles.statButton} ${jurisdictionFilter === 'rac' ? styles.statButtonActive : ''}`}
-          onClick={() => setJurisdictionFilter('rac')}
+          className={`${styles.statButton} ${jurisdictionFilter === 'rulespec' ? styles.statButtonActive : ''}`}
+          onClick={() => setJurisdictionFilter('rulespec')}
         >
-          RAC ({stats.rac_encoded})
+          RuleSpec ({stats.yaml_encoded})
         </button>
         <button
           className={`${styles.statButton} ${jurisdictionFilter === 'canada' ? styles.statButtonActive : ''}`}
@@ -206,7 +206,7 @@ export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: D
           className={`${styles.statButton} ${jurisdictionFilter === 'us' ? styles.statButtonActive : ''}`}
           onClick={() => setJurisdictionFilter('us')}
         >
-          US ({stats.us_federal + stats.us_state + stats.rac_encoded})
+          US ({stats.us_federal + stats.us_state + stats.yaml_encoded})
         </button>
       </div>
 
@@ -224,11 +224,11 @@ export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: D
       <div className={styles.content}>
         {Object.entries(filteredGroups)
           .sort(([a], [b]) => {
-            // Sort RAC groups first, then by key
-            const aIsRac = a.includes('-rac-')
-            const bIsRac = b.includes('-rac-')
-            if (aIsRac && !bIsRac) return -1
-            if (!aIsRac && bIsRac) return 1
+            // Sort RuleSpec groups first, then by key
+            const aIsRuleSpec = a.includes('-rulespec-')
+            const bIsRuleSpec = b.includes('-rulespec-')
+            if (aIsRuleSpec && !bIsRuleSpec) return -1
+            if (!aIsRuleSpec && bIsRuleSpec) return 1
             return a.localeCompare(b)
           })
           .map(([key, group]) => (
@@ -248,7 +248,7 @@ export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: D
               {expandedGroups.has(key) && (
                 <div className={styles.groupContent}>
                   {group.docs.map((doc) => {
-                    const badge = getFormatBadge(doc.format, doc.hasRac)
+                    const badge = getFormatBadge(doc.format, doc.hasRuleSpec)
                     return (
                       <motion.button
                         key={doc.originalIndex}
@@ -273,8 +273,8 @@ export function DocumentBrowser({ documents, stats, selectedIndex, onSelect }: D
 
       <footer className={styles.footer}>
         <span className={styles.footerText}>
-          {jurisdictionFilter === 'rac'
-            ? 'Showing RAC-encoded documents with executable code'
+          {jurisdictionFilter === 'rulespec'
+            ? 'Showing RuleSpec-encoded documents with executable code'
             : 'Select a document to view details'}
         </span>
       </footer>

@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 /**
- * Parse RAC files from rac-us and generate JSON for the viewer
+ * Parse RuleSpec files from rules-us and generate JSON for the viewer
  */
 
 import { readdir, readFile, writeFile } from 'fs/promises'
 import { join, relative } from 'path'
 
-interface ParsedRAC {
+interface ParsedRuleSpec {
   citation: string
   title: string
   text: string
@@ -14,10 +14,10 @@ interface ParsedRAC {
   path: string
 }
 
-const RAC_US = '/Users/maxghenis/RulesFoundation/rac-us/statute'
-const RAC_CA = '/Users/maxghenis/RulesFoundation/rac-ca/statute'
+const RULES_US = '/Users/maxghenis/TheAxiomFoundation/rules-us/statute'
+const RULES_CA = '/Users/maxghenis/TheAxiomFoundation/rules-ca/statute'
 
-async function findRacFiles(dir: string): Promise<string[]> {
+async function findRuleSpecFiles(dir: string): Promise<string[]> {
   const files: string[] = []
 
   async function walk(currentDir: string) {
@@ -27,7 +27,7 @@ async function findRacFiles(dir: string): Promise<string[]> {
         const fullPath = join(currentDir, entry.name)
         if (entry.isDirectory()) {
           await walk(fullPath)
-        } else if (entry.name.endsWith('.rac')) {
+        } else if (entry.name.endsWith('.yaml')) {
           files.push(fullPath)
         }
       }
@@ -40,7 +40,7 @@ async function findRacFiles(dir: string): Promise<string[]> {
   return files
 }
 
-function parseRAC(content: string, filePath: string): ParsedRAC | null {
+function parseRuleSpec(content: string, filePath: string): ParsedRuleSpec | null {
   // Extract citation from first comment line
   const citationMatch = content.match(/^#\s*(\d+\s+USC\s+(?:Section\s+)?\d+[a-z]*(?:\([a-z0-9]+\))*)/im)
     || content.match(/^#\s*(.+?)(?:\n|$)/m)
@@ -64,7 +64,7 @@ function parseRAC(content: string, filePath: string): ParsedRAC | null {
   if (!citation && statuteIdx > 0) {
     const parts = pathParts.slice(statuteIdx + 1)
     const title = parts[0]
-    const section = parts.slice(1).join('/').replace(/\.rac$/, '')
+    const section = parts.slice(1).join('/').replace(/\.yaml$/, '')
     citation = `${title} USC ${section}`
   }
 
@@ -73,25 +73,25 @@ function parseRAC(content: string, filePath: string): ParsedRAC | null {
     title: titleMatch?.[1]?.trim() || citation,
     text: textMatch?.[1]?.trim() || '',
     code: code.trim(),
-    path: relative('/Users/maxghenis/RulesFoundation', filePath),
+    path: relative('/Users/maxghenis/TheAxiomFoundation', filePath),
   }
 }
 
 async function main() {
-  console.log('Scanning for RAC files...')
+  console.log('Scanning for RuleSpec files...')
 
-  const usFiles = await findRacFiles(RAC_US)
-  const caFiles = await findRacFiles(RAC_CA)
+  const usFiles = await findRuleSpecFiles(RULES_US)
+  const caFiles = await findRuleSpecFiles(RULES_CA)
 
-  console.log(`Found ${usFiles.length} US RAC files`)
-  console.log(`Found ${caFiles.length} CA RAC files`)
+  console.log(`Found ${usFiles.length} US RuleSpec files`)
+  console.log(`Found ${caFiles.length} CA RuleSpec files`)
 
-  const documents: ParsedRAC[] = []
+  const documents: ParsedRuleSpec[] = []
 
   for (const file of [...usFiles, ...caFiles]) {
     try {
       const content = await readFile(file, 'utf-8')
-      const parsed = parseRAC(content, file)
+      const parsed = parseRuleSpec(content, file)
       if (parsed && parsed.code) {
         documents.push(parsed)
       }
@@ -110,11 +110,11 @@ async function main() {
   }
 
   await writeFile(
-    join(import.meta.dir, '../src/data/racs.json'),
+    join(import.meta.dir, '../src/data/rulespecs.json'),
     JSON.stringify(output, null, 2)
   )
 
-  console.log('Written to src/data/racs.json')
+  console.log('Written to src/data/rulespecs.json')
 
   // Print sample
   console.log('\nSample documents:')

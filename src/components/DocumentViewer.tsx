@@ -13,7 +13,7 @@ interface Document {
   title: string
   subsections: Subsection[]
   code: string
-  hasRac: boolean
+  hasRuleSpec: boolean
   format: string
   jurisdiction: string
   archPath: string | null
@@ -28,7 +28,7 @@ interface DocumentViewerProps {
   onNavigateToPath?: (path: string) => void
 }
 
-type ViewMode = 'split' | 'statute' | 'rac'
+type ViewMode = 'split' | 'statute' | 'rulespec'
 
 export function DocumentViewer({
   document,
@@ -39,8 +39,8 @@ export function DocumentViewer({
   onNavigateToPath,
 }: DocumentViewerProps) {
   const [highlightedSection, setHighlightedSection] = useState<string | null>(null)
-  // Default to 'statute' view for non-RAC documents
-  const [viewMode, setViewMode] = useState<ViewMode>(document.hasRac ? 'split' : 'statute')
+  // Default to 'statute' view for non-RuleSpec documents
+  const [viewMode, setViewMode] = useState<ViewMode>(document.hasRuleSpec ? 'split' : 'statute')
 
   const handleSectionHover = useCallback((sectionId: string | null) => {
     setHighlightedSection(sectionId)
@@ -115,7 +115,7 @@ export function DocumentViewer({
           >
             Statute
           </button>
-          {document.hasRac && (
+          {document.hasRuleSpec && (
             <>
               <button
                 className={`${styles.viewButton} ${viewMode === 'split' ? styles.viewButtonActive : ''}`}
@@ -124,10 +124,10 @@ export function DocumentViewer({
                 Split
               </button>
               <button
-                className={`${styles.viewButton} ${viewMode === 'rac' ? styles.viewButtonActive : ''}`}
-                onClick={() => setViewMode('rac')}
+                className={`${styles.viewButton} ${viewMode === 'rulespec' ? styles.viewButtonActive : ''}`}
+                onClick={() => setViewMode('rulespec')}
               >
-                RAC
+                RuleSpec
               </button>
             </>
           )}
@@ -177,8 +177,8 @@ export function DocumentViewer({
                   </motion.div>
                 ))}
 
-                {/* Show source file path for non-RAC documents */}
-                {!document.hasRac && document.archPath && (
+                {/* Show source file path for non-RuleSpec documents */}
+                {!document.hasRuleSpec && document.archPath && (
                   <div className={styles.sourceInfo}>
                     <span className={styles.sourceLabel}>Source file:</span>
                     <code className={styles.sourcePath}>{document.archPath}</code>
@@ -189,12 +189,12 @@ export function DocumentViewer({
           )}
 
           {/* Divider */}
-          {viewMode === 'split' && document.hasRac && <div className={styles.divider} />}
+          {viewMode === 'split' && document.hasRuleSpec && <div className={styles.divider} />}
 
-          {/* Code Panel - Only show for RAC documents */}
-          {document.hasRac && (viewMode === 'split' || viewMode === 'rac') && (
+          {/* Code Panel - Only show for RuleSpec documents */}
+          {document.hasRuleSpec && (viewMode === 'split' || viewMode === 'rulespec') && (
             <motion.div
-              key="rac-panel"
+              key="rulespec-panel"
               className={styles.panel}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -203,7 +203,7 @@ export function DocumentViewer({
             >
               <div className={styles.panelHeader}>
                 <span className={styles.panelTitle}>
-                  <span className={styles.panelTitleAccent}>//</span> RAC Encoding
+                  <span className={styles.panelTitleAccent}>//</span> RuleSpec Encoding
                 </span>
               </div>
 
@@ -233,13 +233,13 @@ export function DocumentViewer({
         </div>
         <div className={styles.statusItem}>
           <span>{document.subsections.length} subsections</span>
-          {document.hasRac && (
+          {document.hasRuleSpec && (
             <>
               <span>|</span>
-              <span>{codeLines.length} lines of RAC</span>
+              <span>{codeLines.length} lines of RuleSpec</span>
             </>
           )}
-          {!document.hasRac && (
+          {!document.hasRuleSpec && (
             <>
               <span>|</span>
               <span>{document.format.toUpperCase()} source</span>

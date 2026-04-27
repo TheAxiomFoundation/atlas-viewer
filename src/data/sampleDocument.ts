@@ -1,5 +1,5 @@
 // Sample document: 26 USC 32 - Earned Income Tax Credit
-// This demonstrates the split view with statute text and RAC encoding
+// This demonstrates the split view with statute text and RuleSpec encoding
 
 export const sampleDocument = {
   citation: '26 USC 32',
@@ -32,7 +32,7 @@ export const sampleDocument = {
     },
   ],
   code: `# 26 USC 32 - Earned Income Tax Credit
-# Encoded in RAC (Regulatory and Administrative Code)
+# Encoded in RuleSpec (Regulatory and Administrative Code)
 
 variable eitc_credit: Money
   entity: TaxUnit

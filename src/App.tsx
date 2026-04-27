@@ -18,7 +18,7 @@ interface ViewerDocument {
     codeLines: number[]
   }>
   code: string
-  hasRac: boolean
+  hasRuleSpec: boolean
   format: string
   jurisdiction: string
   archPath: string | null
@@ -63,7 +63,7 @@ function transformRuleToViewerDoc(rule: Rule, children: Rule[]): ViewerDocument 
     title: rule.heading || 'Untitled',
     subsections,
     code: '',
-    hasRac: rule.has_rac,
+    hasRuleSpec: rule.has_rulespec,
     format: 'db',
     jurisdiction: rule.jurisdiction,
     archPath: rule.source_path,
