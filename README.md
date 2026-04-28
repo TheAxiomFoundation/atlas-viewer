@@ -1,8 +1,8 @@
-# Atlas Viewer
+# Axiom app
 
 **Browse legal sources with statute text and RuleSpec encoding split view.**
 
-Atlas Viewer provides a visual interface for exploring the Axiom Foundation Atlas - a comprehensive map of government legal sources including statutes, regulations, and IRS guidance.
+The Axiom app provides a visual interface for exploring encoded law: statutes, regulations, guidance, and RuleSpec encodings.
 
 ## Features
 
@@ -37,9 +37,9 @@ Built with:
 
 ## Related Repos
 
-- [atlas](https://github.com/TheAxiomFoundation/atlas) — Source document archive
+- [axiom](https://github.com/TheAxiomFoundation/axiom) — Source corpus and app data services
 - [rulespec-compile](https://github.com/TheAxiomFoundation/rulespec-compile) — RuleSpec compiler and DSL tooling
-- [autorulespec](https://github.com/TheAxiomFoundation/autorulespec) — AI-powered statute encoding
+- [axiom-encode](https://github.com/TheAxiomFoundation/axiom-encode) — AI-powered statute encoding
 
 ## License
 
