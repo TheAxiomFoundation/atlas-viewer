@@ -37,7 +37,7 @@ Built with:
 
 ## Related Repos
 
-- [axiom](https://github.com/TheAxiomFoundation/axiom) — Source corpus and app data services
+- [axiom-corpus](https://github.com/TheAxiomFoundation/axiom-corpus) — Source corpus and data services
 - [rulespec-compile](https://github.com/TheAxiomFoundation/rulespec-compile) — RuleSpec compiler and DSL tooling
 - [axiom-encode](https://github.com/TheAxiomFoundation/axiom-encode) — AI-powered statute encoding
 
